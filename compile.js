@@ -9,7 +9,7 @@ class Compile {
       // 2.编译 提取元素和文本节点
       this.compile(fragment);
       // 3.把编译好的 fragment 塞回到真实的 dom 中
-      this.fragmentToDom(fragment);
+      this.el.appendChild(fragment);
     }
   }
   /* 辅助方法 */
@@ -32,33 +32,25 @@ class Compile {
     // console.log(fragment);
     return fragment;
   }
-  fragmentToDom (fragment) {
-    let firstChild;
-    while (firstChild = fragment.firstChild) {
-      this.el.appendChild(firstChild);
-    };
-  }
   compileElement(node) {
     let attrs = node.attributes;
-    // console.log(attrs);
-    const data = this.vm.$data();
     [...attrs].forEach(attr => {
       const attrName = attr.name;
       if (this.isDirective(attrName)) {
-        switch (attrName) {
-          case 'v-model': 
-            console.log('vm: ', data);
-            node.value =data[attr.value];
-            node.removeAttribute('v-model');
-            break;
-        }
+        const expr = attr.value;
+        const [, type] = attrName.split('-');
+        CompileUtil[type](node, this.vm, expr);
         // console.log('v-', attrName, attr.value);
       }
-      // console.log(attr, attr.name);
     })
   }
+  // 文本
   compileText(node) {
-
+    const expr = node.textContent;
+    const reg = /\{\{([^}]+)\}\}/g;
+    if (reg.test(expr)) {
+      CompileUtil['text'](node, this.vm, expr);
+    }
   }
   compile (fragment) {
     let childNodes = fragment.childNodes;
@@ -74,3 +66,35 @@ class Compile {
     })
   }
 } 
+
+CompileUtil = {
+  getVal (vm, expr) {
+    expr = expr.trim().split('.');
+    return expr.reduce((prev, next) => {
+      return prev[next];
+    }, vm.$data);
+  },
+  getTextValue (vm, expr) {
+    return expr.replace(/\{\{([^}]+)\}\}/g, (...arguments) => {
+      return this.getVal(vm, arguments[1])
+    })
+  },
+  text (node, vm, expr) {
+    const updateFn = this.updater['textUpdater'];
+    const value = this.getTextValue(vm, expr);
+    updateFn && updateFn(node, value);
+
+  },
+  model (node, vm, expr) {
+    const updateFn = this.updater['modelUpdater'];
+    updateFn && updateFn(node, this.getVal(vm, expr));
+  },
+  updater: {
+    textUpdater (node, value) {
+      node.textContent = value;
+    },
+    modelUpdater (node, value) {
+      node.value = value;
+    }
+  }
+}
