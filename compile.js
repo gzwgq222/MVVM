@@ -9,6 +9,7 @@ class Compile {
       // 2.编译 提取元素和文本节点
       this.compile(fragment);
       // 3.把编译好的 fragment 塞回到真实的 dom 中
+      this.fragmentToDom(fragment);
     }
   }
   /* 辅助方法 */
@@ -28,18 +29,31 @@ class Compile {
     while (firstChild = el.firstChild) {
       fragment.appendChild(firstChild);
     };
-    console.log(fragment);
+    // console.log(fragment);
     return fragment;
+  }
+  fragmentToDom (fragment) {
+    let firstChild;
+    while (firstChild = fragment.firstChild) {
+      this.el.appendChild(firstChild);
+    };
   }
   compileElement(node) {
     let attrs = node.attributes;
-    console.log(attrs);
+    // console.log(attrs);
+    const data = this.vm.$data();
     [...attrs].forEach(attr => {
       const attrName = attr.name;
       if (this.isDirective(attrName)) {
-        console.log('v-', attr.name);
+        switch (attrName) {
+          case 'v-model': 
+            console.log('vm: ', data);
+            node.value =data[attr.value];
+            break;
+        }
+        // console.log('v-', attrName, attr.value);
       }
-      console.log(attr, attr.name);
+      // console.log(attr, attr.name);
     })
   }
   compileText(node) {
@@ -49,12 +63,12 @@ class Compile {
     let childNodes = fragment.childNodes;
     [...childNodes].forEach(node => {
       if (this.isElementNode(node)) {
-        console.log('元素节点：', node);
+        // console.log('元素节点：', node);
         this.compileElement(node);
         this.compile(node); // 严格模式下 arguments.callee 会报错
       } else {
         this.compileText(node);
-        console.log('text: ', node);
+        // console.log('text: ', node);
       }
     })
   }
