@@ -49,6 +49,7 @@ class Compile {
           case 'v-model': 
             console.log('vm: ', data);
             node.value =data[attr.value];
+            node.removeAttribute('v-model');
             break;
         }
         // console.log('v-', attrName, attr.value);
