@@ -61,7 +61,6 @@ class Compile {
         this.compile(node); // 严格模式下 arguments.callee 会报错
       } else {
         this.compileText(node);
-        // console.log('text: ', node);
       }
     })
   }
