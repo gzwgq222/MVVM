@@ -13,7 +13,7 @@
     <ul>
       <li>li标签</li>
     </ul>
-    {{ msg }}
+    {{ dict.name }} {{ dict.name }}
   </div>
   <script src='compile.js'></script>
   <script src='mvvm.js'></script>
@@ -22,7 +22,10 @@
     let vm = new MVVM({
       el: '#app',
       data: {
-        msg: 'hello world'
+        msg: 'hello world',
+        dict: {
+          name: '蒙奇D.路飞'
+        }
       }
     })
   </script>

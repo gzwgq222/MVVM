@@ -67,15 +67,17 @@ class Compile {
 } 
 
 CompileUtil = {
+  // 获取变量值
   getVal (vm, expr) {
-    expr = expr.trim().split('.');
+    expr = expr.split('.');
     return expr.reduce((prev, next) => {
       return prev[next];
     }, vm.$data);
   },
+  // 获取 {{ }} 中的变量
   getTextValue (vm, expr) {
     return expr.replace(/\{\{([^}]+)\}\}/g, (...arguments) => {
-      return this.getVal(vm, arguments[1])
+      return this.getVal(vm, arguments[1].trim())
     })
   },
   text (node, vm, expr) {
@@ -93,6 +95,7 @@ CompileUtil = {
       node.textContent = value;
     },
     modelUpdater (node, value) {
+      node.removeAttribute('v-model');
       node.value = value;
     }
   }
